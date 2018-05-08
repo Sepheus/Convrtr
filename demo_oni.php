@@ -13,6 +13,4 @@ echo $c
     ->decode64()
     ->toHex()
     ;
-$op = new ONI("\x00");
-echo $op->shift_p([-1])->toHex();
 ?>

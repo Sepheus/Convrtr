@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 /**
  * PHP Port of the ONI.rb Toolkit for Ruby.
  * Please note that this is intended for at least PHP7.
@@ -53,45 +53,45 @@
         $this->position = $this->offset;
     }
 
-    public function rewind() {
+    public function rewind() : void {
         $this->position = $this->offset;
     }
 
-    public function current() {
+    public function current() : int {
         return $this->bytes[$this->position];
     }
 
-    public function key() {
+    public function key() : int {
         return $this->position - $this->offset;
     }
 
-    public function next() {
+    public function next() : void {
         ++$this->position;
     }
 
-    public function valid() {
+    public function valid() : bool {
         return isset($this->bytes[$this->position]);
     }
     
-    public function offsetGet($index) {
+    public function offsetGet($index) : int {
         return $this->bytes[$index + $this->offset];
     }
     
-    public function offsetSet($index, $newval) {
+    public function offsetSet($index, $newval) : void {
         $this->bytes[$index + $this->offset] = $newval & 0xFF;
     }
     
-    public function &iterate() {
+    public function &iterate() : Iterator {
         foreach($this->bytes as &$v) {
             yield $v;
         }
     }
     
-    public function count() {
+    public function count() : int {
         return count($this->bytes);
     }
 
-    public function __toString() {
+    public function __toString() : string {
         return join(
             array_map(
                 "chr",
@@ -100,15 +100,15 @@
     }
  }
  
- class ONI extends ByteArray {  
-    private function _rot(&$byte, $n) {
-        $n %= 26;
+ final class ONI extends ByteArray {  
+    private function _rot(int &$byte, int $n) : void {
+        $n = abs($n % 26);
         if($byte > 64 && $byte < 91) { $byte = ((($byte - 65) + $n) % 26) + 65; }
         else if($byte > 96 && $byte < 123) { $byte = ((($byte - 97) + $n) % 26) + 97; }
         $byte &= 0xFF;
     }
     
-    public function rot($n) {
+    public function rot(int $n) : ONI  {
         $output = new ONI($this);
         foreach($output->iterate() as &$byte) {
             $output->_rot($byte, $n);
@@ -116,7 +116,7 @@
         return $output;
     }
     
-    public function shift_c($n) {
+    public function shift_c(int $n) : ONI {
         $output = new ONI($this);
         foreach($output->iterate() as &$byte) {
             $byte = ($byte + $n) & 0xFF;
@@ -124,7 +124,7 @@
         return $output;
     }
 
-    public function shift_p($pattern) {
+    public function shift_p($pattern) : ONI {
         $output = new ONI($this);
         $_pattern = new ByteArray($pattern);
         $patternLength = count($_pattern);
@@ -137,11 +137,11 @@
         return $output;
     }
 
-    public function shift_k($pattern) {
+    public function shift_k($pattern) : ONI {
         return $this->shift_p($pattern);
     }
     
-    public function decrypt($key) {
+    public function decrypt(string $key) : ONI {
         $_key = new ByteArray($key);
         $keyLength = count($_key);
         $size = count($this) >> 1;
@@ -156,7 +156,7 @@
         return $output;
     }
     
-    public function encrypt($key) {
+    public function encrypt(string $key) : ONI {
         $_key = new ByteArray($key);
         $keyLength = count($_key);
         $size = count($this);
@@ -172,27 +172,23 @@
         return $output;        
     }
     
-    public function reverse() {
-        return new ONI(strrev($this));
+    public function reverse() : ONI {
+        return new ONI(strrev($this->toString()));
     }
 
-    public function encode64() {
-        return new ONI(base64_encode($this));
+    public function encode64() : ONI {
+        return new ONI(base64_encode($this->toString()));
     }
 
-    public function decode64() {
-        return new ONI(base64_decode($this));
+    public function decode64() : ONI {
+        return new ONI(base64_decode($this->toString()));
     }
     
-    public function toString() {
-        return join(
-            array_map(
-                "chr",
-                iterator_to_array($this)
-            ));
+    public function toString() : string {
+        return $this->__toString();
     }
     
-    public function toHex($sep = "-") {
+    public function toHex(string $sep = "-") : ONI {
         $hex = join(
                     array_map(
                         "sprintf",
