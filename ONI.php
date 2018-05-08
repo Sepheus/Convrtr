@@ -37,7 +37,7 @@
     }
 
     public function key() {
-        return $this->position;
+        return $this->position-1;
     }
 
     public function next() {
@@ -49,11 +49,11 @@
     }
     
     public function offsetGet($index) {
-        return $this->bytes[$index];
+        return $this->bytes[$index+1];
     }
     
     public function offsetSet($index, $newval) {
-        $this->bytes[$index] = $newval & 0xFF;
+        $this->bytes[$index+1] = $newval & 0xFF;
     }
     
     public function count() {
@@ -91,9 +91,9 @@
         $size = count($this) >> 1;
         $output = new ONI($size);
         for($i = 0; $i < $size; $i++) {
-            $k = $_key[1 + ($i % $keyLength)];
-            $b = $this[2 + ($i << 1)] & 1;
-            $output[$i + 1] = (($this[1 + ($i << 1)] + ($k & 1)) << 1) - $b - $k;
+            $k = $_key[$i % $keyLength];
+            $b = $this[1 + ($i << 1)] & 1;
+            $output[$i] = (($this[$i << 1] + ($k & 1)) << 1) - $b - $k;
         }
         return $output;
     }
@@ -104,12 +104,12 @@
         $size = count($this);
         $output = new ONI($size << 1);
         for($i = 0; $i < $size; $i++) {
-            $k = $_key[1 + ($i % $keyLength)];
-            $d = $this[1 + $i];
+            $k = $_key[$i % $keyLength];
+            $d = $this[$i];
             $a = $k & 1;
             $b = $d & 1;
-            $output[1 + ($i << 1)] = ($d + $k + (!$a&$b) - ($a&$b)) >> 1;
-            $output[2 + ($i << 1)] = (rand() & 0xFE | ($a^$b));
+            $output[$i << 1] = ($d + $k + (!$a&$b) - ($a&$b)) >> 1;
+            $output[1 + ($i << 1)] = (rand() & 0xFE | ($a^$b));
         }
         return $output;        
     }
