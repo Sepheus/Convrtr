@@ -5,7 +5,7 @@ use PHPUnit\Framework\Testcase;
 
 final class ONITests extends TestCase {
 
-    public function testRotWorks() : void {
+    public function testRot() : void {
         $obj = new ONI("Hello");
         $this->assertEquals($obj->rot(13), "Uryyb");
         $this->assertEquals($obj->rot(-13), "Uryyb");
